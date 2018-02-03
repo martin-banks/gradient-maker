@@ -6,6 +6,8 @@
     @mouseover="handleMouseOver"
     @mousemove="handleMouseOver"
     @mouseout="handleMouseOut"
+    @mousedown="handleMouseDown"
+    @mouseup="handleMouseUp"
   >
     <div class="picker" :style="pickerStyle"></div>
   </div>
@@ -28,46 +30,57 @@
         pickerStyle: {
           opacity: 0,
           transform: 'none'
-        }
+        },
+        isSelecting: false
       }
     },
     methods: {
       handleMouseOut (e) {
-        this.pickerStyle = {
-          opacity: 0
+        if (!this.isSelecting) {
+          this.pickerStyle = {
+            opacity: 0
+          }
         }
       },
       handleMouseOver (e) {
-        const coords = {
-          x: e.x - this.$el.offsetLeft + window.scrollX,
-          y: e.y - this.$el.offsetTop + window.scrollY,
+        if (this.isSelecting) {
+          const coords = {
+            x: e.x - this.$el.offsetLeft + window.scrollX,
+            y: e.y - this.$el.offsetTop + window.scrollY,
+          }
+          const pct  = {
+            x: coords.x / this.$el.getBoundingClientRect().width,
+            y: coords.y / this.$el.getBoundingClientRect().height,
+          }
+          const colors = {
+            hsl: [
+              Math.floor(pct.x * 360), 
+              '100%', 
+              `${Math.floor((pct.y * 100))}%`,
+            ],
+            rgb: `rgb()`,
+          }
+          const pickerSize = 20
+          this.pickerStyle = {
+            opacity: 1,
+            width: `${pickerSize}px`,
+            height: `${pickerSize}px`,
+            transform: `translate(${coords.x - (pickerSize / 2)}px, ${coords.y - (pickerSize / 2)}px)`
+          }
+          this.$emit('colorValues', {
+            hsl: [
+              Math.floor(pct.x * 360), 
+              '100%', 
+              `${Math.floor(Math.min((pct.y * 100), 100))}%`,
+            ]
+          })
         }
-        const pct  = {
-          x: coords.x / this.$el.getBoundingClientRect().width,
-          y: coords.y / this.$el.getBoundingClientRect().height,
-        }
-        const colors = {
-          hsl: [
-            Math.floor(pct.x * 360), 
-            '100%', 
-            `${Math.floor((pct.y * 100))}%`,
-          ],
-          rgb: `rgb()`,
-        }
-        const pickerSize = 20
-        this.pickerStyle = {
-          opacity: 1,
-          width: `${pickerSize}px`,
-          height: `${pickerSize}px`,
-          transform: `translate(${coords.x - (pickerSize / 2)}px, ${coords.y - (pickerSize / 2)}px)`
-        }
-        this.$emit('colorValues', {
-          hsl: [
-            Math.floor(pct.x * 360), 
-            '100%', 
-            `${Math.floor(Math.min((pct.y * 100), 100))}%`,
-          ]
-        })
+      },
+      handleMouseDown () {
+        this.isSelecting = true
+      },
+      handleMouseUp () {
+        this.isSelecting = false
       }
     },
   }
