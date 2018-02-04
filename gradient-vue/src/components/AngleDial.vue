@@ -42,7 +42,7 @@
         if (!this.turning) return
         const mouse = {
           x: e.x - this.dial.x,// - dial.x,
-          y: e.y - this.dial.y,// - dial.y,
+          y: e.y - this.dial.y + window.scrollY,// - dial.y,
         }
         const delta = {
           x: mouse.x - this.origin.x,
