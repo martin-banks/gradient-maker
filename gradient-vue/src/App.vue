@@ -8,6 +8,7 @@
       <pre>{{ colorValues }}</pre>
     </div>
     <div class="colors"></div>
+    <angle-dial @degrees="updateAngle"/>
     <div 
       class="preview"
       :style="preview"
@@ -28,11 +29,13 @@
 
 <script>
 import GradientBox from '@/components/GradientBox'
+import AngleDial from '@/components/AngleDial'
 
 export default {
   name: 'app',
   components: {
     'gradient-box': GradientBox,
+    'angle-dial': AngleDial,
   },
   data () {
     return {
@@ -47,6 +50,7 @@ export default {
       previewKey: 0,
       activeHandle: 0,
       handles: [],
+      gradientAngle: 0,
       previewType: 'background',
       gradientType: 'linear-gradient'
     }
@@ -56,6 +60,7 @@ export default {
       this.selectedColor = `hsl(${newColor.hsl.join()})`
       this.handles[this.activeHandle] = `hsl(${newColor.hsl.join()})`
       this.setGradient(this.selectedColor)
+      this.setPreviewGradient()
     },
     setGradient (val) {
       this.previewValues[this.previewKey] = val
@@ -63,7 +68,7 @@ export default {
     },
     makeGradient () {
       if (this.handles.length > 1) {
-        const gradient = `${this.gradientType}(90deg, ${this.handles.join()})`
+        const gradient = `${this.gradientType}(${this.gradientAngle}deg, ${this.handles.join()})`
         return gradient
       } else {
         return this.handles.join('')
@@ -76,16 +81,21 @@ export default {
     },
     clickHandle (i) {
       this.activeHandle = i
+      this.setPreviewGradient()
     },
     addHandle (i) {
       this.handles.push(this.selectedColor)
       this.activeHandle = this.handles.length - 1
+      this.setPreviewGradient()
+
     },
     removeHandle () {
       this.handles.splice(this.activeHandle, 1)
-      this.preview = {
-        [this.previewType]: this.makeGradient()
-      }
+      this.setPreviewGradient()
+    },
+    updateAngle (val) {
+      this.gradientAngle = val
+      this.setPreviewGradient()
     }
   },
   created () {
